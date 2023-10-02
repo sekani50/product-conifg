@@ -159,7 +159,7 @@ const LoginForm = () => {
 
         <button
           type="submit"
-          // onClick={() => navigate("/customize")}
+          onClick={() => navigate("/dashboard")}
           className="w-full text-white bg-[#474544] hover:bg-opacity-95 focus:outline-none font-medium text-sm px-5 py-3 text-center"
         >
           Login

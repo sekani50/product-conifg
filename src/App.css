@@ -88,3 +88,11 @@ input[type=range] {
     background: #ADADAD;
   }
   
+html,body {
+  overflow-x: hidden;
+}
+    
+  .hide-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  

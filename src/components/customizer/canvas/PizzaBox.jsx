@@ -4,23 +4,32 @@ Command: npx gltfjsx@6.2.4 public/PizzaBox.glb
 */
 
 import React, { useRef, useState } from "react";
-import { useGLTF, useAnimations, useTexture, Decal } from "@react-three/drei";
+import { useGLTF, useAnimations, useTexture, Decal, PivotControls } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 import state from "../../../store";
 import * as THREE from "three";
+import { useControls } from 'leva'
+import a from "../../../assets/logo.png"
 
 export default function Model(props) {
   const group = useRef();
+  const [pos, setXYZ] = useState([0, 0.75, 0.3])
+  const [rot, setRot] = useState([0, 0, 0])
   const { nodes, materials, animations } = useGLTF("/PizzaBox.glb");
   const { actions } = useAnimations(animations, group);
   const [hovered, sethover] = useState(null);
   const snap = useSnapshot(state);
-
-  const logotexture = useTexture(snap.logoDecal);
+  const { debug, image, scale } = useControls({
+    debug: false,
+    image: { image: "/logo192.png" },
+    scale: { value: 1, min: 0, max: 2 }
+  })
+  const logotexture = useTexture("/logo192.png");
   const fulltexture = useTexture(snap.fullDecal);
 
-  const textureLoader = new THREE.TextureLoader();
-  const imageTexture = textureLoader.load("path_to_your_image.png"); // Replace with the path to your image
+  //const textureLoader = new THREE.TextureLoader();
+ // const imageTexture = textureLoader.load(a); // Replace with the path to your image
+
 
   //console.log(hovered, state.current)
   //console.log(snap.items.CardBoardExterior)
@@ -56,18 +65,33 @@ export default function Model(props) {
           <primitive object={nodes.Base} />
           <group name="Box_12in">
             <skinnedMesh
+            castShadow
               material-color={snap.items.CardboardInterior}
               name="Plane002"
               geometry={nodes.Plane002.geometry}
               material={materials.CardboardInterior}
               skeleton={nodes.Plane002.skeleton}
             >
-              {snap.isLogoTexture && state.items.CardboardInterior && (
-                <primitive object={imageTexture} attach="map" />
-              )}
+               <group position={[0, 0.75, 0.5]}>
+          <PivotControls
+            scale={0.55}
+            activeAxes={[true, true, false]}
+            onDrag={(local) => {
+              const position = new THREE.Vector3()
+              const scale = new THREE.Vector3()
+              const quaternion = new THREE.Quaternion()
+              local.decompose(position, quaternion, scale)
+              const rotation = new THREE.Euler().setFromQuaternion(quaternion)
+              setXYZ([position.x, position.y + 0.75, position.z + 0.3])
+              setRot([rotation.x, rotation.y, rotation.z])
+            }}
+          />
+        </group>
+        <Decal debug={debug} position={pos} rotation={rot} scale={0.6 * scale} map={useTexture(image)} />
             </skinnedMesh>
 
             <skinnedMesh
+            castShadow
               material-color={snap.items.CardBoardExterior}
               name="Plane002_1"
               geometry={nodes.Plane002_1.geometry}

@@ -4,8 +4,10 @@ Command: npx gltfjsx@6.2.13 boardglb.glb
 */
 
 import React, { useRef, useState } from 'react'
-import { useGLTF, useAnimations } from '@react-three/drei'
+import { useGLTF, useAnimations,Decal, PivotControls, useTexture } from '@react-three/drei'
 import { proxy, useSnapshot } from 'valtio'
+import * as THREE from "three";
+import { useControls } from 'leva'
 
 const state = proxy({
   current:null,
@@ -25,6 +27,14 @@ export function Board(props) {
   const { actions } = useAnimations(animations, group)
   const snap = useSnapshot(state)
   const [hovered, sethover] = useState(null)
+  
+  const [pos, setXYZ] = useState([0, 0.75, 0.3])
+  const [rot, setRot] = useState([0, 0, 0])
+  const { debug, image, scale } = useControls({
+    debug: false,
+    image: { image: "/logo192.png" },
+    scale: { value: 1, min: 0, max: 2 }
+  })
 
   const flattenModel = () => {
    
@@ -86,6 +96,22 @@ export function Board(props) {
                 <group name="GEO_FRONT_FLAP_$AssimpFbx$_Scaling">
                   <group name="GEO_FRONT_FLAP_$AssimpFbx$_GeometricTranslation" position={[3.281, -0.05, 0]}>
                     <mesh material-color={snap.items.GEO_FRONT_FLAP} name="GEO_FRONT_FLAP" geometry={nodes.GEO_FRONT_FLAP.geometry} material={materials['Material #3']}>
+                    <group position={[0, 0.75, 0.5]}>
+          <PivotControls
+            scale={0.55}
+            activeAxes={[true, true, false]}
+            onDrag={(local) => {
+              const position = new THREE.Vector3()
+              const scale = new THREE.Vector3()
+              const quaternion = new THREE.Quaternion()
+              local.decompose(position, quaternion, scale)
+              const rotation = new THREE.Euler().setFromQuaternion(quaternion)
+              setXYZ([position.x, position.y + 0.75, position.z + 0.3])
+              setRot([rotation.x, rotation.y, rotation.z])
+            }}
+          />
+        </group>
+        <Decal debug={debug} position={pos} rotation={rot} scale={0.6 * scale} map={useTexture(image)} />
                       <group name="GEO_FRONT_FLAP_$AssimpFbx$_GeometricTranslationInverse" position={[-3.281, 0.05, 0]}>
                         <mesh material-color={snap.items.GEO_FRONT_FLAP_02} name="GEO_FRONT_FLAP_02" geometry={nodes.GEO_FRONT_FLAP_02.geometry} material={materials['Material #3']} position={[3.281, -0.05, 2.096]} rotation={[-1.667, 0, 0]} />
                       </group>
